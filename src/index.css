@@ -3,139 +3,123 @@
 @tailwind utilities;
 
 @layer utilities {
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-  .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 }
 
 @layer components {
-  /* Smooth fade-in animations */
+
+  /* ── Core keyframes ── */
   @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
+    from { opacity: 0; }
+    to   { opacity: 1; }
   }
 
-  @keyframes slideUp {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+  @keyframes softUp {
+    from { opacity: 0; transform: translateY(14px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0)   scale(1);    }
   }
 
-  @keyframes slideDown {
-    from {
-      opacity: 0;
-      transform: translateY(-20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+  @keyframes softDown {
+    from { opacity: 0; transform: translateY(-12px); }
+    to   { opacity: 1; transform: translateY(0);     }
   }
 
-  @keyframes scaleIn {
-    from {
-      opacity: 0;
-      transform: scale(0.95);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
+  /* Screen slide-in from right (home → schedule) */
+  @keyframes slideInRight {
+    from { opacity: 0; transform: translateX(28px); }
+    to   { opacity: 1; transform: translateX(0);    }
   }
 
-  @keyframes pulse-soft {
-    0%, 100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.7;
-    }
+  /* Screen slide-in from left (schedule → home) */
+  @keyframes slideInLeft {
+    from { opacity: 0; transform: translateX(-28px); }
+    to   { opacity: 1; transform: translateX(0);     }
   }
 
-  @keyframes buttonPress {
-    0% {
-      transform: scale(1);
-    }
-    50% {
-      transform: scale(0.95);
-    }
-    100% {
-      transform: scale(1);
-    }
+  /* Modal: fade + gentle zoom from 96 % → 100 % */
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.96); }
+    to   { opacity: 1; transform: scale(1);    }
   }
 
-  .animate-fadeIn {
-    animation: fadeIn 0.3s ease-in-out;
+  /* Phone frame gentle float */
+  @keyframes phoneFloat {
+    0%, 100% { transform: translateY(0px);   box-shadow: 0 32px 64px -12px rgba(0,0,0,.22), 0 0 0 1px rgba(0,0,0,.04); }
+    50%       { transform: translateY(-6px);  box-shadow: 0 44px 80px -12px rgba(0,0,0,.28), 0 0 0 1px rgba(0,0,0,.04); }
   }
 
-  .animate-slideUp {
-    animation: slideUp 0.4s ease-out;
-  }
+  /* ── Animation utility classes ── */
+  .animate-fadeIn      { animation: fadeIn      0.35s cubic-bezier(0.4,0,0.2,1) both; }
+  .animate-softUp      { animation: softUp      0.42s cubic-bezier(0.4,0,0.2,1) both; }
+  .animate-softDown    { animation: softDown    0.38s cubic-bezier(0.4,0,0.2,1) both; }
+  .animate-slideUp     { animation: softUp      0.42s cubic-bezier(0.4,0,0.2,1) both; }
+  .animate-slideDown   { animation: softDown    0.38s cubic-bezier(0.4,0,0.2,1) both; }
+  .animate-scaleIn     { animation: modalIn     0.32s cubic-bezier(0.4,0,0.2,1) both; }
+  .animate-modalIn     { animation: modalIn     0.32s cubic-bezier(0.4,0,0.2,1) both; }
 
-  .animate-slideDown {
-    animation: slideDown 0.4s ease-out;
-  }
+  .screen-enter-right  { animation: slideInRight 0.38s cubic-bezier(0.4,0,0.2,1) both; }
+  .screen-enter-left   { animation: slideInLeft  0.38s cubic-bezier(0.4,0,0.2,1) both; }
 
-  .animate-scaleIn {
-    animation: scaleIn 0.3s ease-out;
-  }
+  .phone-float         { animation: phoneFloat  5s ease-in-out infinite; }
 
-  .animate-pulse-soft {
-    animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  }
+  /* ── Staggered reveal — top-to-bottom sections ── */
+  .stagger-section { animation: softUp 0.42s cubic-bezier(0.4,0,0.2,1) both; }
+  .stagger-section:nth-child(1) { animation-delay: 0.04s; }
+  .stagger-section:nth-child(2) { animation-delay: 0.10s; }
+  .stagger-section:nth-child(3) { animation-delay: 0.16s; }
+  .stagger-section:nth-child(4) { animation-delay: 0.22s; }
+  .stagger-section:nth-child(5) { animation-delay: 0.28s; }
+  .stagger-section:nth-child(6) { animation-delay: 0.34s; }
 
-  .animate-buttonPress {
-    animation: buttonPress 0.2s ease-in-out;
-  }
+  /* Staggered cards / timeline items */
+  .stagger-item { animation: softUp 0.4s cubic-bezier(0.4,0,0.2,1) both; }
+  .stagger-item:nth-child(1) { animation-delay: 0.06s; }
+  .stagger-item:nth-child(2) { animation-delay: 0.13s; }
+  .stagger-item:nth-child(3) { animation-delay: 0.20s; }
+  .stagger-item:nth-child(4) { animation-delay: 0.27s; }
+  .stagger-item:nth-child(5) { animation-delay: 0.34s; }
+  .stagger-item:nth-child(n+6) { animation-delay: 0.40s; }
 
-  /* Transition utilities */
-  .transition-smooth {
-    @apply transition-all duration-300 ease-in-out;
-  }
+  /* ── Transition helpers ── */
+  .transition-smooth      { @apply transition-all duration-300 ease-in-out; }
+  .transition-smooth-fast { @apply transition-all duration-200 ease-in-out; }
+  .transition-smooth-slow { @apply transition-all duration-500 ease-in-out; }
 
-  .transition-smooth-fast {
-    @apply transition-all duration-200 ease-in-out;
-  }
-
-  .transition-smooth-slow {
-    @apply transition-all duration-500 ease-in-out;
-  }
-
-  /* Hover effects */
+  /* ── Hover / tap micro-interactions ── */
+  /* Card lift — subtle shadow deepen + 1px rise */
   .hover-lift {
-    @apply transition-smooth hover:shadow-lg hover:-translate-y-1;
+    transition: transform 0.22s cubic-bezier(0.4,0,0.2,1),
+                box-shadow 0.22s cubic-bezier(0.4,0,0.2,1);
+  }
+  .hover-lift:hover {
+    transform: translateY(-2px) scale(1.012);
+    box-shadow: 0 12px 28px -6px rgba(0,0,0,.14);
+  }
+  .hover-lift:active {
+    transform: scale(0.97);
+    box-shadow: 0 4px 10px -4px rgba(0,0,0,.10);
   }
 
+  /* Button scale — restrained, no bounce */
   .hover-scale {
-    @apply transition-smooth hover:scale-105;
+    transition: transform 0.18s cubic-bezier(0.4,0,0.2,1),
+                box-shadow 0.18s cubic-bezier(0.4,0,0.2,1);
   }
+  .hover-scale:hover  { transform: scale(1.05); }
+  .hover-scale:active { transform: scale(0.95); }
 
+  /* Blue glow for primary buttons */
   .hover-glow {
-    @apply transition-smooth hover:shadow-lg hover:shadow-blue-300;
+    transition: box-shadow 0.22s cubic-bezier(0.4,0,0.2,1),
+                background-color 0.18s ease;
   }
+  .hover-glow:hover { box-shadow: 0 0 0 4px rgba(59,130,246,.20); }
 
-  /* Staggered animation for list items */
-  .stagger-item {
-    animation: slideUp 0.4s ease-out;
+  /* Pulse soft (for loading states etc.) */
+  @keyframes pulse-soft {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.65; }
   }
-
-  .stagger-item:nth-child(1) { animation-delay: 0.1s; }
-  .stagger-item:nth-child(2) { animation-delay: 0.2s; }
-  .stagger-item:nth-child(3) { animation-delay: 0.3s; }
-  .stagger-item:nth-child(4) { animation-delay: 0.4s; }
-  .stagger-item:nth-child(5) { animation-delay: 0.5s; }
-  .stagger-item:nth-child(n+6) { animation-delay: 0.6s; }
+  .animate-pulse-soft { animation: pulse-soft 2s cubic-bezier(0.4,0,0.6,1) infinite; }
 }
