@@ -308,6 +308,7 @@ export default function App() {
             onSaveTask={handleSaveTask}
             onDeleteTask={handleDeleteTask}
             onReorder={handleReorderTasks}
+            isDarkMode={isDarkMode}
           />
         )}
       </div>
@@ -431,7 +432,7 @@ function HomeScreen({ onNavigate, tasks, profile, setProfile, searchQuery, setSe
 }
 
 // --- SCHEDULE SCREEN ---
-function ScheduleScreen({ onNavigate, tasks, selectedDate, setSelectedDate, onSaveTask, onDeleteTask, onReorder }) {
+function ScheduleScreen({ onNavigate, tasks, selectedDate, setSelectedDate, onSaveTask, onDeleteTask, onReorder, isDarkMode }) {
   const [editingTask, setEditingTask] = useState(null);
   const [isAddingTask, setIsAddingTask] = useState(false);
   
@@ -471,24 +472,24 @@ function ScheduleScreen({ onNavigate, tasks, selectedDate, setSelectedDate, onSa
   };
 
   return (
-    <div className="p-6 h-full flex flex-col bg-gray-50 relative overflow-hidden">
+    <div className={`p-6 h-full flex flex-col relative overflow-hidden transition-colors duration-500 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <div className="flex justify-between items-center mb-2 pt-4">
-        <button onClick={onNavigate} className="p-2 bg-white rounded-full shadow-sm hover:shadow-md transition">
-          <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+        <button onClick={onNavigate} className={`p-2 rounded-full shadow-sm hover:shadow-md transition ${isDarkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50'}`}>
+          <svg className={`w-5 h-5 ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
         </button>
         <button onClick={() => setIsAddingTask(true)} className="bg-blue-600 text-white px-5 py-2.5 rounded-2xl font-semibold text-sm shadow-lg shadow-blue-200 hover:bg-blue-700 transition flex items-center gap-2">
           <span>+</span> Add Task
         </button>
       </div>
-      <p className="text-xs text-gray-500 mb-4">Drag tasks up or down to reorder them.</p>
+      <p className={`text-xs mb-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Drag tasks up or down to reorder them.</p>
 
-      <div className="flex justify-between items-center mb-8 bg-white p-4 rounded-3xl shadow-sm overflow-x-auto no-scrollbar gap-2">
+      <div className={`flex justify-between items-center mb-8 p-4 rounded-3xl shadow-sm overflow-x-auto no-scrollbar gap-2 transition-colors duration-500 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
         {weekDates.map((day) => {
           const isActive = day.dateString === selectedDate;
           return (
             <div key={day.dateString} onClick={() => setSelectedDate(day.dateString)} className="flex flex-col items-center cursor-pointer min-w-[32px]">
-              <span className={`text-[10px] font-medium mb-2 ${isActive ? 'text-blue-600' : 'text-gray-400'}`}>{day.dayName}</span>
-              <span className={`text-sm font-bold ${isActive ? 'text-blue-600' : 'text-gray-800'}`}>{day.dayNumber}</span>
+              <span className={`text-[10px] font-medium mb-2 ${isActive ? 'text-blue-600' : isDarkMode ? 'text-gray-400' : 'text-gray-400'}`}>{day.dayName}</span>
+              <span className={`text-sm font-bold ${isActive ? 'text-blue-600' : isDarkMode ? 'text-gray-100' : 'text-gray-800'}`}>{day.dayNumber}</span>
               {isActive && <div className="w-1 h-1 bg-blue-600 rounded-full mt-2"></div>}
             </div>
           );
@@ -496,10 +497,10 @@ function ScheduleScreen({ onNavigate, tasks, selectedDate, setSelectedDate, onSa
       </div>
 
       <div className="flex-1 overflow-y-auto no-scrollbar relative pb-10">
-        <div className="absolute left-2 top-2 bottom-0 w-px bg-gray-200 z-0"></div>
+        <div className={`absolute left-2 top-2 bottom-0 w-px z-0 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
         <div className="space-y-6 relative z-10 pl-8">
            {displayTasks.length === 0 ? (
-            <p className="text-gray-400 text-sm mt-4">No tasks scheduled.</p>
+            <p className={`text-sm mt-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>No tasks scheduled.</p>
           ) : (
             displayTasks.map((task, index) => (
               <TimelineItem 
