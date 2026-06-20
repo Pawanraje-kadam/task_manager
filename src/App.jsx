@@ -275,12 +275,21 @@ export default function App() {
   };
   const handleReorderTasks = (reorderedTasks) => setTasks(reorderedTasks);
 
+  // Track navigation direction for screen transition animation
+  const [navDirection, setNavDirection] = useState('right');
+  const [screenKey, setScreenKey] = useState(0);
+
+  const goToSchedule = () => { setNavDirection('right'); setScreenKey(k => k+1); setCurrentView('schedule'); };
+  const goToHome     = () => { setNavDirection('left');  setScreenKey(k => k+1); setCurrentView('home'); };
+
   return (
     <div className={`min-h-screen flex items-center justify-center sm:p-6 transition-colors duration-500 ${isDarkMode ? 'bg-gray-950' : 'bg-gradient-to-br from-slate-100 via-slate-200 to-slate-300'}`}>
-      <div className={`w-full h-screen sm:w-[375px] sm:h-[812px] sm:rounded-[40px] shadow-2xl overflow-hidden relative sm:border-[8px] flex flex-col transition-colors duration-500 ${isDarkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-100'}`}>
+      <div className={`phone-float w-full h-screen sm:w-[375px] sm:h-[812px] sm:rounded-[40px] overflow-hidden relative sm:border-[8px] flex flex-col transition-colors duration-500 ${isDarkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-100'}`}>
         {currentView === 'home' ? (
-          <HomeScreen 
-            onNavigate={() => setCurrentView('schedule')} 
+          <HomeScreen
+            key={screenKey}
+            enterClass="screen-enter-left"
+            onNavigate={goToSchedule}
             tasks={tasks}
             profile={profile || { name: '', seed: 'Rifat' }}
             setProfile={setProfile}
@@ -300,8 +309,10 @@ export default function App() {
             onToggleDarkMode={() => setIsDarkMode(prev => !prev)}
           />
         ) : (
-          <ScheduleScreen 
-            onNavigate={() => setCurrentView('home')} 
+          <ScheduleScreen
+            key={screenKey}
+            enterClass="screen-enter-right"
+            onNavigate={goToHome}
             tasks={tasks}
             selectedDate={selectedDate}
             setSelectedDate={setSelectedDate}
@@ -317,7 +328,7 @@ export default function App() {
 }
 
 // --- HOME SCREEN ---
-function HomeScreen({ onNavigate, tasks, profile, setProfile, searchQuery, setSearchQuery, activeFilter, setActiveFilter, onSaveTask, onDeleteTask, onImportTasks, quickAddValue, setQuickAddValue, onQuickAddTask, isDarkMode, onToggleDarkMode, showProfilePrompt, setShowProfilePrompt }) {
+function HomeScreen({ onNavigate, tasks, profile, setProfile, searchQuery, setSearchQuery, activeFilter, setActiveFilter, onSaveTask, onDeleteTask, onImportTasks, quickAddValue, setQuickAddValue, onQuickAddTask, isDarkMode, onToggleDarkMode, showProfilePrompt, setShowProfilePrompt, enterClass }) {
   const [editingTask, setEditingTask] = useState(null);
   const [isCreatingTask, setIsCreatingTask] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -337,8 +348,9 @@ function HomeScreen({ onNavigate, tasks, profile, setProfile, searchQuery, setSe
     .sort((a, b) => parseTime(a.time) - parseTime(b.time));
 
   return (
-    <div className="p-6 h-full flex flex-col bg-white dark:bg-gray-900 overflow-y-auto no-scrollbar transition-colors duration-500">
-      <div className="flex justify-between items-center mb-6 pt-4 animate-fadeIn">
+    <div className={`p-6 h-full flex flex-col bg-white dark:bg-gray-900 overflow-y-auto no-scrollbar transition-colors duration-500 ${enterClass || ''}`}>
+      {/* Header */}
+      <div className="flex justify-between items-center mb-6 pt-4 stagger-section">
         <button onClick={openSettings} aria-label="Open settings" className="p-2 bg-gray-50 rounded-full hover:bg-gray-100 transition-smooth-fast hover-scale active:scale-95 dark:bg-gray-800 dark:hover:bg-gray-700">
           <svg className="w-5 h-5 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h7" /></svg>
         </button>
@@ -359,7 +371,7 @@ function HomeScreen({ onNavigate, tasks, profile, setProfile, searchQuery, setSe
         </div>
       </div>
 
-      <form onSubmit={onQuickAddTask} className="mb-6 rounded-[24px] border border-blue-100 bg-gradient-to-r from-blue-50 via-indigo-50 to-sky-50 p-4 shadow-sm dark:border-gray-700 dark:from-gray-800/80 dark:via-gray-800/70 dark:to-gray-800/80">
+      <form onSubmit={onQuickAddTask} className="mb-6 rounded-[24px] border border-blue-100 bg-gradient-to-r from-blue-50 via-indigo-50 to-sky-50 p-4 shadow-sm dark:border-gray-700 dark:from-gray-800/80 dark:via-gray-800/70 dark:to-gray-800/80 stagger-section">
         <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.25em] text-blue-600 dark:text-blue-300">Quick Add</label>
         <div className="flex items-center gap-2">
           <input
@@ -373,7 +385,7 @@ function HomeScreen({ onNavigate, tasks, profile, setProfile, searchQuery, setSe
         </div>
       </form>
 
-      <div className="mb-6">
+      <div className="mb-6 stagger-section">
         <p className="text-gray-500 text-sm mb-1 dark:text-gray-400">Good Morning, {profile.name}!</p>
         <h1 className="text-2xl font-bold text-gray-900 leading-tight dark:text-white">
           You have <span className="text-blue-500">{tasks.filter(t => t.date === getTodayDateString()).length} tasks</span> <br/> today 👍
@@ -383,14 +395,14 @@ function HomeScreen({ onNavigate, tasks, profile, setProfile, searchQuery, setSe
         )}
       </div>
 
-      <div className="relative mb-8">
+      <div className="relative mb-8 stagger-section">
         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
           <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
         </div>
         <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search today's tasks..." className="w-full pl-11 pr-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-100 outline-none text-gray-700 placeholder-gray-400 font-medium transition-smooth focus:bg-blue-50 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500" />
       </div>
 
-      <div className="flex justify-between mb-8 gap-3">
+      <div className="flex justify-between mb-8 gap-3 stagger-section">
         {['All', 'To-Do', 'Progress', 'Done'].map((status, i) => {
           const isActive = activeFilter === status;
           const bgClass = status === 'All' ? 'bg-blue-100 text-blue-600' : i===1 ? 'bg-pink-100 text-pink-500' : i===2 ? 'bg-yellow-100 text-yellow-500' : 'bg-green-100 text-green-500';
@@ -405,7 +417,7 @@ function HomeScreen({ onNavigate, tasks, profile, setProfile, searchQuery, setSe
         })}
       </div>
 
-      <div className="flex justify-between items-end mb-4">
+      <div className="flex justify-between items-end mb-4 stagger-section">
         <h2 className="text-lg font-bold text-gray-900 dark:text-white">Today's Tasks</h2>
         <button onClick={onNavigate} className="text-xs text-blue-600 font-bold hover:text-blue-800 transition dark:text-blue-400">Schedule ➔</button>
       </div>
@@ -432,7 +444,7 @@ function HomeScreen({ onNavigate, tasks, profile, setProfile, searchQuery, setSe
 }
 
 // --- SCHEDULE SCREEN ---
-function ScheduleScreen({ onNavigate, tasks, selectedDate, setSelectedDate, onSaveTask, onDeleteTask, onReorder, isDarkMode }) {
+function ScheduleScreen({ onNavigate, tasks, selectedDate, setSelectedDate, onSaveTask, onDeleteTask, onReorder, isDarkMode, enterClass }) {
   const [editingTask, setEditingTask] = useState(null);
   const [isAddingTask, setIsAddingTask] = useState(false);
   
@@ -472,8 +484,8 @@ function ScheduleScreen({ onNavigate, tasks, selectedDate, setSelectedDate, onSa
   };
 
   return (
-    <div className={`p-6 h-full flex flex-col relative overflow-hidden transition-colors duration-500 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
-      <div className="flex justify-between items-center mb-2 pt-4">
+    <div className={`p-6 h-full flex flex-col relative overflow-hidden transition-colors duration-500 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'} ${enterClass || ''}`}>
+      <div className="flex justify-between items-center mb-2 pt-4 stagger-section">
         <button onClick={onNavigate} className={`p-2 rounded-full shadow-sm hover:shadow-md transition ${isDarkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50'}`}>
           <svg className={`w-5 h-5 ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
         </button>
@@ -481,9 +493,9 @@ function ScheduleScreen({ onNavigate, tasks, selectedDate, setSelectedDate, onSa
           <span>+</span> Add Task
         </button>
       </div>
-      <p className={`text-xs mb-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Drag tasks up or down to reorder them.</p>
+      <p className={`text-xs mb-4 stagger-section ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Drag tasks up or down to reorder them.</p>
 
-      <div className={`flex justify-between items-center mb-8 p-4 rounded-3xl shadow-sm overflow-x-auto no-scrollbar gap-2 transition-colors duration-500 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
+      <div className={`flex justify-between items-center mb-8 p-4 rounded-3xl shadow-sm overflow-x-auto no-scrollbar gap-2 transition-colors duration-500 stagger-section ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
         {weekDates.map((day) => {
           const isActive = day.dateString === selectedDate;
           return (
@@ -557,7 +569,7 @@ function TimelineItem({ task, onClick, draggable, onDragStart, onDragEnter, onDr
       onDragOver={(e) => e.preventDefault()}
     >
       <div className={`absolute top-4 w-4 h-4 rounded-full border-4 border-white shadow-sm transition-colors ${isDone ? 'bg-gray-300' : 'bg-rose-500 ring-2 ring-rose-200'}`} style={{ left: '-1.5rem', transform: 'translateX(-50%)' }}></div>
-      <div className={`p-5 rounded-3xl shadow-sm transition-all group-hover:shadow-md ${isDone ? 'bg-gray-100 text-gray-800' : 'bg-rose-500 text-white'}`}>
+      <div className={`p-5 rounded-3xl shadow-sm hover-lift ${isDone ? 'bg-gray-100 text-gray-800' : 'bg-rose-500 text-white'}`}>
         <div className="flex justify-between items-start mb-2">
           <div className="flex items-center gap-2">
             <span className="text-xs opacity-80">⋮⋮</span>
@@ -623,7 +635,7 @@ function TaskModal({ isOpen, task, selectedDate, onClose, onSubmit, onDelete }) 
 
   return (
     <div className="absolute inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
-      <div className="bg-white w-full max-h-[90%] overflow-y-auto rounded-[30px] p-6 shadow-2xl transition-all no-scrollbar flex flex-col animate-slideUp dark:bg-gray-900">
+      <div className="bg-white w-full max-h-[90%] overflow-y-auto rounded-[30px] p-6 shadow-2xl transition-all no-scrollbar flex flex-col animate-modalIn dark:bg-gray-900">
         <div className="flex justify-between items-center mb-6">
           <h3 className="font-bold text-lg text-gray-900 dark:text-white">{task ? 'Edit Task' : 'New Task'}</h3>
           <button onClick={onClose} className="p-2 bg-gray-50 rounded-full text-gray-500 hover:bg-gray-100 transition-smooth-fast hover-scale active:scale-95"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
@@ -709,7 +721,7 @@ function SettingsModal({ isOpen, onClose, tasks, onImportTasks, onOpenProfileEdi
 
   return (
     <div className="absolute inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
-      <div className="bg-white w-full rounded-[30px] p-6 shadow-2xl transition-all animate-slideUp dark:bg-gray-900">
+      <div className="bg-white w-full rounded-[30px] p-6 shadow-2xl transition-all animate-modalIn dark:bg-gray-900">
         <div className="flex justify-between items-center mb-6">
           <h3 className="font-bold text-lg text-gray-900 dark:text-white">Settings</h3>
           <button onClick={onClose} className="p-2 bg-gray-50 rounded-full text-gray-500 hover:bg-gray-100 transition-smooth-fast hover-scale active:scale-95"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
@@ -758,7 +770,7 @@ function ProfileModal({ isOpen, onClose, profile, setProfile, force = false }) {
 
   return (
     <div className="absolute inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
-      <div className="bg-white w-full rounded-[30px] p-6 shadow-2xl transition-all animate-slideUp dark:bg-gray-900">
+      <div className="bg-white w-full rounded-[30px] p-6 shadow-2xl transition-all animate-modalIn dark:bg-gray-900">
         <div className="flex justify-between items-center mb-6">
           <h3 className="font-bold text-lg text-gray-900 dark:text-white">Profile</h3>
           {!force && (
