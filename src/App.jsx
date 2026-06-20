@@ -284,7 +284,7 @@ export default function App() {
 
   return (
     <div className={`min-h-screen flex items-center justify-center sm:p-6 transition-colors duration-500 ${isDarkMode ? 'bg-gray-950' : 'bg-gradient-to-br from-slate-100 via-slate-200 to-slate-300'}`}>
-      <div className={`phone-float w-full h-screen sm:w-[375px] sm:h-[812px] sm:rounded-[40px] overflow-hidden relative sm:border-[8px] flex flex-col transition-colors duration-500 ${isDarkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-100'}`}>
+      <div className={`w-full h-screen sm:w-[375px] sm:h-[812px] sm:rounded-[40px] shadow-2xl overflow-hidden relative sm:border-[8px] flex flex-col transition-colors duration-500 ${isDarkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-100'}`}>
         {currentView === 'home' ? (
           <HomeScreen
             key={screenKey}
