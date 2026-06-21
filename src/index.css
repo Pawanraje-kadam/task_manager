@@ -2,68 +2,91 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Safe area + base resets ── */
+@layer base {
+  :root {
+    --sat: env(safe-area-inset-top, 0px);
+    --sar: env(safe-area-inset-right, 0px);
+    --sab: env(safe-area-inset-bottom, 0px);
+    --sal: env(safe-area-inset-left, 0px);
+  }
+
+  html, body, #root {
+    min-height: 100dvh;
+    overscroll-behavior: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
 @layer utilities {
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* Safe area padding helpers */
+  .pt-safe { padding-top: max(1.5rem, var(--sat)); }
+  .pb-safe { padding-bottom: max(1rem, var(--sab)); }
+  .px-safe { 
+    padding-left: max(1.5rem, var(--sal)); 
+    padding-right: max(1.5rem, var(--sar)); 
+  }
+  .safe-full {
+    padding-top: max(1.5rem, var(--sat));
+    padding-bottom: max(1rem, var(--sab));
+    padding-left: max(1.5rem, var(--sal));
+    padding-right: max(1.5rem, var(--sar));
+  }
+
+  /* min touch target */
+  .touch-target {
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }
 
 @layer components {
 
-  /* ── Core keyframes ── */
+  /* ── Keyframes ── */
+  @keyframes softUp {
+    from { opacity: 0; transform: translateY(14px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes softDown {
+    from { opacity: 0; transform: translateY(-12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
   @keyframes fadeIn {
     from { opacity: 0; }
     to   { opacity: 1; }
   }
-
-  @keyframes softUp {
-    from { opacity: 0; transform: translateY(14px) scale(0.98); }
-    to   { opacity: 1; transform: translateY(0)   scale(1);    }
-  }
-
-  @keyframes softDown {
-    from { opacity: 0; transform: translateY(-12px); }
-    to   { opacity: 1; transform: translateY(0);     }
-  }
-
-  /* Screen slide-in from right (home → schedule) */
   @keyframes slideInRight {
     from { opacity: 0; transform: translateX(28px); }
-    to   { opacity: 1; transform: translateX(0);    }
+    to   { opacity: 1; transform: translateX(0); }
   }
-
-  /* Screen slide-in from left (schedule → home) */
   @keyframes slideInLeft {
     from { opacity: 0; transform: translateX(-28px); }
-    to   { opacity: 1; transform: translateX(0);     }
+    to   { opacity: 1; transform: translateX(0); }
   }
-
-  /* Modal: fade + gentle zoom from 96 % → 100 % */
   @keyframes modalIn {
     from { opacity: 0; transform: scale(0.96); }
-    to   { opacity: 1; transform: scale(1);    }
+    to   { opacity: 1; transform: scale(1); }
   }
 
-  /* Phone frame gentle float */
-  @keyframes phoneFloat {
-    0%, 100% { transform: translateY(0px);   box-shadow: 0 32px 64px -12px rgba(0,0,0,.22), 0 0 0 1px rgba(0,0,0,.04); }
-    50%       { transform: translateY(-6px);  box-shadow: 0 44px 80px -12px rgba(0,0,0,.28), 0 0 0 1px rgba(0,0,0,.04); }
-  }
+  /* ── Animation classes ── */
+  .animate-fadeIn    { animation: fadeIn   0.35s cubic-bezier(0.4,0,0.2,1) both; }
+  .animate-softUp    { animation: softUp   0.42s cubic-bezier(0.4,0,0.2,1) both; }
+  .animate-softDown  { animation: softDown 0.38s cubic-bezier(0.4,0,0.2,1) both; }
+  .animate-slideUp   { animation: softUp   0.42s cubic-bezier(0.4,0,0.2,1) both; }
+  .animate-slideDown { animation: softDown 0.38s cubic-bezier(0.4,0,0.2,1) both; }
+  .animate-scaleIn   { animation: modalIn  0.32s cubic-bezier(0.4,0,0.2,1) both; }
+  .animate-modalIn   { animation: modalIn  0.32s cubic-bezier(0.4,0,0.2,1) both; }
 
-  /* ── Animation utility classes ── */
-  .animate-fadeIn      { animation: fadeIn      0.35s cubic-bezier(0.4,0,0.2,1) both; }
-  .animate-softUp      { animation: softUp      0.42s cubic-bezier(0.4,0,0.2,1) both; }
-  .animate-softDown    { animation: softDown    0.38s cubic-bezier(0.4,0,0.2,1) both; }
-  .animate-slideUp     { animation: softUp      0.42s cubic-bezier(0.4,0,0.2,1) both; }
-  .animate-slideDown   { animation: softDown    0.38s cubic-bezier(0.4,0,0.2,1) both; }
-  .animate-scaleIn     { animation: modalIn     0.32s cubic-bezier(0.4,0,0.2,1) both; }
-  .animate-modalIn     { animation: modalIn     0.32s cubic-bezier(0.4,0,0.2,1) both; }
+  .screen-enter-right { animation: slideInRight 0.38s cubic-bezier(0.4,0,0.2,1) both; }
+  .screen-enter-left  { animation: slideInLeft  0.38s cubic-bezier(0.4,0,0.2,1) both; }
 
-  .screen-enter-right  { animation: slideInRight 0.38s cubic-bezier(0.4,0,0.2,1) both; }
-  .screen-enter-left   { animation: slideInLeft  0.38s cubic-bezier(0.4,0,0.2,1) both; }
-
-  .phone-float         { animation: phoneFloat  5s ease-in-out infinite; }
-
-  /* ── Staggered reveal — top-to-bottom sections ── */
+  /* ── Stagger sections ── */
   .stagger-section { animation: softUp 0.42s cubic-bezier(0.4,0,0.2,1) both; }
   .stagger-section:nth-child(1) { animation-delay: 0.04s; }
   .stagger-section:nth-child(2) { animation-delay: 0.10s; }
@@ -71,8 +94,9 @@
   .stagger-section:nth-child(4) { animation-delay: 0.22s; }
   .stagger-section:nth-child(5) { animation-delay: 0.28s; }
   .stagger-section:nth-child(6) { animation-delay: 0.34s; }
+  .stagger-section:nth-child(7) { animation-delay: 0.40s; }
 
-  /* Staggered cards / timeline items */
+  /* ── Stagger cards / items ── */
   .stagger-item { animation: softUp 0.4s cubic-bezier(0.4,0,0.2,1) both; }
   .stagger-item:nth-child(1) { animation-delay: 0.06s; }
   .stagger-item:nth-child(2) { animation-delay: 0.13s; }
@@ -81,13 +105,12 @@
   .stagger-item:nth-child(5) { animation-delay: 0.34s; }
   .stagger-item:nth-child(n+6) { animation-delay: 0.40s; }
 
-  /* ── Transition helpers ── */
+  /* ── Transitions ── */
   .transition-smooth      { @apply transition-all duration-300 ease-in-out; }
   .transition-smooth-fast { @apply transition-all duration-200 ease-in-out; }
   .transition-smooth-slow { @apply transition-all duration-500 ease-in-out; }
 
-  /* ── Hover / tap micro-interactions ── */
-  /* Card lift — subtle shadow deepen + 1px rise */
+  /* ── Hover / tap interactions ── */
   .hover-lift {
     transition: transform 0.22s cubic-bezier(0.4,0,0.2,1),
                 box-shadow 0.22s cubic-bezier(0.4,0,0.2,1);
@@ -101,7 +124,6 @@
     box-shadow: 0 4px 10px -4px rgba(0,0,0,.10);
   }
 
-  /* Button scale — restrained, no bounce */
   .hover-scale {
     transition: transform 0.18s cubic-bezier(0.4,0,0.2,1),
                 box-shadow 0.18s cubic-bezier(0.4,0,0.2,1);
@@ -109,14 +131,11 @@
   .hover-scale:hover  { transform: scale(1.05); }
   .hover-scale:active { transform: scale(0.95); }
 
-  /* Blue glow for primary buttons */
   .hover-glow {
-    transition: box-shadow 0.22s cubic-bezier(0.4,0,0.2,1),
-                background-color 0.18s ease;
+    transition: box-shadow 0.22s cubic-bezier(0.4,0,0.2,1), background-color 0.18s ease;
   }
   .hover-glow:hover { box-shadow: 0 0 0 4px rgba(59,130,246,.20); }
 
-  /* Pulse soft (for loading states etc.) */
   @keyframes pulse-soft {
     0%, 100% { opacity: 1; }
     50%       { opacity: 0.65; }
