@@ -621,10 +621,15 @@ function HomeScreen({ onNavigate, tasks, profile, setProfile, searchQuery, setSe
     .filter(task => {
       const isToday = task.date === getTodayDateString();
       const matchesSearch = task.title.toLowerCase().includes(searchQuery.toLowerCase()) || task.desc.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesFilter = activeFilter === 'All' || task.status === activeFilter;
-      return isToday && matchesSearch && matchesFilter;
+      if (activeFilter === 'Done') return task.status === 'Done' && matchesSearch;
+      if (activeFilter === 'All')  return (isToday || task.status === 'Done') && matchesSearch;
+      return isToday && task.status === activeFilter && matchesSearch;
     })
-    .sort((a, b) => parseTime(a.time) - parseTime(b.time));
+    .sort((a, b) => {
+      if (a.status === 'Done' && b.status !== 'Done') return 1;
+      if (a.status !== 'Done' && b.status === 'Done') return -1;
+      return parseTime(a.time) - parseTime(b.time);
+    });
 
   return (
     <div className={`flex flex-col bg-white dark:bg-gray-900 overflow-y-auto no-scrollbar transition-colors duration-500 ${enterClass || ''}`}
@@ -823,6 +828,32 @@ function ScheduleScreen({ onNavigate, tasks, selectedDate, setSelectedDate, onSa
 function TaskCard({ task, onClick, desktop }) {
   const t = taskThemes[task.theme] || taskThemes.blue;
   const priority = getPriorityStyle(task.priority || 'Medium');
+  const isDone = task.status === 'Done';
+
+  if (isDone) {
+    const dateLabel = task.date !== getTodayDateString()
+      ? new Date(task.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      : 'Today';
+    return (
+      <div onClick={onClick}
+        className={`${desktop ? 'w-full' : 'w-[200px]'} bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-[28px] p-5 cursor-pointer hover-lift active:scale-95 opacity-75`}>
+        <div className="mb-3 flex items-start justify-between gap-2">
+          <h3 className="font-bold text-base truncate text-gray-400 dark:text-gray-500 line-through">{task.title}</h3>
+          <span className="rounded-full px-2 py-1 text-[10px] font-semibold flex-shrink-0 bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500">✓ Done</span>
+        </div>
+        <p className="text-gray-400 dark:text-gray-500 text-xs mb-4 leading-relaxed line-clamp-2">{task.desc}</p>
+        <div className="flex items-center gap-2 mb-4">
+          <div className="text-xs font-medium bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 inline-block px-2 py-1 rounded-lg">{task.time}</div>
+          <div className="text-[10px] font-bold bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 inline-block px-2 py-1 rounded-lg">{dateLabel}</div>
+        </div>
+        <div className="flex justify-between items-center text-xs font-bold mb-1 text-gray-400 dark:text-gray-500"><span>Progress</span><span>100%</span></div>
+        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 overflow-hidden">
+          <div className="bg-gray-400 dark:bg-gray-500 h-1.5 rounded-full" style={{ width: '100%' }}></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div onClick={onClick}
       className={`${desktop ? 'w-full' : 'w-[200px]'} ${t.bg} rounded-[28px] p-5 text-white shadow-lg cursor-pointer hover-lift active:scale-95`}>
@@ -938,7 +969,14 @@ function TaskModal({ isOpen, task, selectedDate, onClose, onSubmit, onDelete }) 
           </div>
           <div>
             <label className="block text-xs font-bold text-gray-600 dark:text-gray-300 mb-1 ml-1">Status</label>
-            <select value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})}
+            <select value={formData.status} onChange={e => {
+                const val = e.target.value;
+                setFormData(prev => ({
+                  ...prev,
+                  status: val,
+                  progress: val === 'Done' ? 100 : prev.progress,
+                }));
+              }}
               className="w-full bg-gray-50 dark:bg-gray-800 dark:text-gray-100 rounded-2xl py-3 px-4 outline-none text-sm font-medium transition-smooth focus:bg-blue-50 focus:ring-2 focus:ring-blue-300">
               <option value="To-Do">To-Do</option>
               <option value="Progress">Progress</option>
@@ -957,7 +995,14 @@ function TaskModal({ isOpen, task, selectedDate, onClose, onSubmit, onDelete }) 
           <div>
             <label className="block text-xs font-bold text-gray-600 dark:text-gray-300 mb-1 ml-1">Progress: {formData.progress}%</label>
             <input type="range" min="0" max="100" value={formData.progress}
-              onChange={e => setFormData({...formData, progress: Number(e.target.value)})}
+              onChange={e => {
+                const val = Number(e.target.value);
+                setFormData(prev => ({
+                  ...prev,
+                  progress: val,
+                  status: val === 100 ? 'Done' : prev.status === 'Done' ? 'Progress' : prev.status,
+                }));
+              }}
               className="w-full accent-blue-600 transition-smooth" />
           </div>
           <div>
@@ -968,6 +1013,13 @@ function TaskModal({ isOpen, task, selectedDate, onClose, onSubmit, onDelete }) 
           {formError && <p className="text-sm text-red-600">{formError}</p>}
           <div className="flex gap-3 pt-2">
             {task && <button type="button" onClick={() => setShowConfirmDelete(true)} className="bg-red-50 text-red-600 font-bold py-4 px-6 rounded-2xl hover:bg-red-100 transition-smooth hover-scale active:scale-95">Delete</button>}
+            {task && formData.status !== 'Done' && (
+              <button type="button"
+                onClick={() => setFormData(prev => ({ ...prev, status: 'Done', progress: 100 }))}
+                className="bg-green-50 text-green-600 font-bold py-4 px-4 rounded-2xl hover:bg-green-100 transition-smooth hover-scale active:scale-95">
+                ✓ Done
+              </button>
+            )}
             <button type="submit" className="flex-1 bg-blue-600 text-white font-bold py-4 rounded-2xl hover:bg-blue-700 transition-smooth hover-scale active:scale-95 shadow-lg shadow-blue-200">{task ? 'Save' : 'Create'}</button>
           </div>
         </form>
